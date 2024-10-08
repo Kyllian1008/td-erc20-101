@@ -1,8 +1,9 @@
 import { ethers } from "hardhat";
 import { utils } from "ethers";
 
+
 async function main() {
-    // Deploying ERC20 TD Token
+    // Deploying ERC20 TD Token 
     console.log("Deploying ERC20 TD Token");
     const ERC20TD = await ethers.getContractFactory("ERC20TD");
     const tdToken = await ERC20TD.deploy("TD-ERC20-101", "TD-ERC20-101", 0x108b2a2c28029094000000n);
@@ -17,9 +18,25 @@ async function main() {
     const Evaluator = await ethers.getContractFactory("Evaluator");
     const evaluator = await Evaluator.deploy((tdToken as any).target, (claimableToken as any).target);
 
+        // Deploying ExerciseSolution Contract
+    console.log("Deploying ExerciseSolution");
+    const ExerciseSolution = await ethers.getContractFactory("ExerciseSolution");
+    const exerciseSolution = await ExerciseSolution.deploy(claimableToken.address);
+    await exerciseSolution.deployed();
+    console.log(`ExerciseSolution deployed at: ${exerciseSolution.address}`);
+    
+
     // Setting Permissions for the Evaluator
     console.log("Setting Permissions for Evaluator");
     await tdToken.setTeacher((evaluator as any).target, true);
+
+    // Appel de la fonction ex1_claimedPoints()
+    console.log("Réclamation des points...");
+    const tx = await evaluator.ex4_approvedExerciseSolution();
+    
+    // Attendre que la transaction soit minée
+    await tx.wait();
+    console.log("Points réclamés avec succès !");
 
     // Deploy Recap (Log the deployed contract addresses)
     console.log("Deployment Recap:");
